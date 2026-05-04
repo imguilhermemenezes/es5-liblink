@@ -1,34 +1,10 @@
-# 📚 Sistema de Gestão de Biblioteca Escolar
-Este projeto propõe o desenvolvimento de um sistema de gestão e controle de estoque voltado para o contexto educacional. O foco principal é a automatização do registro de obras e o gerenciamento prático do fluxo de empréstimos e devoluções, buscando otimizar o dia a dia de administradores e usuários.
+# Sistema de Gestão de Biblioteca Escolar
 
-## 🚀 Objetivo
-Modernizar o controle físico das bibliotecas escolares, substituindo processos manuais por uma interface digital funcional que facilite o acesso à informação literária e auxilie na organização do acervo.
+O projeto automatiza o controle de acervos e empréstimos em escolas usando PHP e MySQL.
 
-## 🛠️ Tecnologias e Ferramentas
-- Linguagem: PHP
-- Banco de Dados: MySQL
-- Modelagem: UML (Casos de Uso, Classes, Sequência e Atividades)
-- Prototipagem: Figma
-- Versionamento: Git & GitHub
-- Metodologia: Scrum & Kanban
+Principais Pontos:
 
-## 📋 Funcionalidades Planejadas
-- [ ] Gestão de Acervo: Cadastro, edição e exclusão de livros.
-- [ ] Controle de Empréstimos: Registro de saídas e entradas de exemplares.
-- [ ] Gestão de Usuários: Cadastro de alunos e funcionários.
-- [ ] Monitoramento: Consulta rápida de disponibilidade de títulos e prazos.
-
-## 📁 Estrutura do Projeto
-A organização do desenvolvimento segue as etapas da metodologia ágil:
-
-1. Planejamento: Definição do backlog e priorização de tarefas via GitHub Kanban.
-2. Design: Criação de protótipos de alta fidelidade no Figma para validação de UI/UX.
-3. Documentação: Mapeamento da lógica do sistema através de diagramas UML.
-4. Desenvolvimento: Implementação do código em PHP com integração ao banco MySQL.
-
-## 👥 Equipe
-- Breno Gabriel de Oliveira Barreto - Desenvolvedor
-- Gabriel Ribeiro Couto - UX/UI
-- Guilherme Ferreira Menezes - Gerente de Projeto
-- Kaio Guilherme Morais Pires da Cruz - UX/UI
-- Nicolas Fernandes Santiago - Desenvolvedor
+Objetivo: Modernizar a gestão física para uma interface digital funcional.
+Tecnologias: PHP, MySQL, UML, Figma, Git e Metodologias Ágeis (Scrum/Kanban).
+Funcionalidades: Cadastro de livros, controle de empréstimos e devoluções, gestão de usuários e consulta de disponibilidade.
+Processo: Planejamento via Kanban, prototipagem no Figma e documentação técnica com UML.
