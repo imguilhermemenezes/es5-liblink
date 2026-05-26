@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BookOpen, Settings, Users } from 'lucide-react';
+import imagePng from '../assets/image.png';
 
 export default function Landing() {
     return (
@@ -26,10 +27,16 @@ export default function Landing() {
                         </p>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        {/* Placeholder for illustration */}
-                        <div style={{ width: '300px', height: '200px', backgroundColor: 'var(--color-primary)', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-main)', fontWeight: 'bold', fontSize: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
-                            Ilustração
-                        </div>
+                        <img
+                            src={imagePng}
+                            alt="Ilustração Liblink"
+                            style={{
+                                width: '100%',
+                                maxWidth: '450px',
+                                height: 'auto',
+                                objectFit: 'cover'
+                            }}
+                        />
                     </div>
                 </div>
 
@@ -39,7 +46,7 @@ export default function Landing() {
                             <Settings size={32} color="var(--color-text-main)" />
                         </div>
                         <div>
-                            <h3 style={{ marginBottom: '0.5rem' }}>Painel do Administrador<br/>(Controle e Personalização)</h3>
+                            <h3 style={{ marginBottom: '0.5rem' }}>Painel do Administrador<br />(Controle e Personalização)</h3>
                             <p style={{ fontSize: '0.875rem' }}>Tenha visão geral do acervo, gerencie o acesso da sua equipe e personalize a interface com as cores e a logomarca da sua instituição. O sistema com a cara da sua escola.</p>
                         </div>
                     </div>
@@ -49,7 +56,7 @@ export default function Landing() {
                             <Users size={32} color="var(--color-text-main)" />
                         </div>
                         <div>
-                            <h3 style={{ marginBottom: '0.5rem' }}>Interface do Bibliotecário<br/>(Empréstimos e Devoluções)</h3>
+                            <h3 style={{ marginBottom: '0.5rem' }}>Interface do Bibliotecário<br />(Empréstimos e Devoluções)</h3>
                             <p style={{ fontSize: '0.875rem' }}>Uma interface limpa e intuitiva focada no dia a dia. Realize buscas rápidas no catálogo e registre empréstimos e devoluções de alunos em poucos cliques.</p>
                         </div>
                     </div>

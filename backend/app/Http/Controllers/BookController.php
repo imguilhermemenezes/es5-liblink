@@ -74,6 +74,128 @@ class BookController extends Controller
     }
 
     /**
+     * Scanner de livros
+     */
+    public function scan(Request $request)
+    {
+        $request->validate([
+            'isbn' => 'required|string|max:255',
+        ]);
+
+        $existingBook = Book::where('isbn', $request->isbn)
+                            ->where('school_id', auth()->user()->school_id)
+                            ->first();
+
+        if ($existingBook) {
+            $existingBook->total_quantity += 1;
+            $existingBook->available_quantity += 1;
+            $existingBook->save();
+            
+            return response()->json([
+                'message' => 'Estoque atualizado (+1)',
+                'book' => $existingBook
+            ], 200);
+        }
+
+        // Busca de livros em APIs externas
+        $cleanIsbn = str_replace('-', '', $request->isbn);
+        
+        // 1. BrasilAPI
+        $brasilApiUrl = "https://brasilapi.com.br/api/isbn/v1/{$cleanIsbn}";
+        $response = Http::get($brasilApiUrl);
+        $bookData = null;
+        $coverUrl = "https://covers.openlibrary.org/b/isbn/{$cleanIsbn}-L.jpg";
+
+        if ($response->successful()) {
+            $data = $response->json();
+            $bookData = [
+                'title' => $data['title'] ?? 'Livro Desconhecido',
+                'author' => isset($data['authors']) && count($data['authors']) > 0 ? implode(', ', $data['authors']) : 'Autor Desconhecido',
+                'genre' => isset($data['subjects']) && count($data['subjects']) > 0 ? $data['subjects'][0] : '',
+                'cover_url' => $data['cover_url'] ?? $coverUrl
+            ];
+        }
+
+        // 2. Google Books
+        if (!$bookData) {
+            // Recupera a chave configurada de forma segura
+            $apiKey = config('services.google_books.key'); 
+            
+            // Adiciona o parâmetro 'key' na URL apenas se a chave existir
+            $googleUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:{$cleanIsbn}";
+            if (!empty($apiKey)) {
+                $googleUrl .= "&key={$apiKey}";
+            }
+            
+            $googleResponse = Http::get($googleUrl);
+            
+            if ($googleResponse->successful()) {
+                $data = $googleResponse->json();
+                
+                if (isset($data['items']) && count($data['items']) > 0) {
+                    $volumeInfo = $data['items'][0]['volumeInfo'];
+                    $gCover = $volumeInfo['imageLinks']['thumbnail'] ?? $coverUrl;
+                    
+                    // Troca http por https caso o Google retorne sem SSL
+                    if ($gCover) {
+                        $gCover = str_replace('http://', 'https://', $gCover);
+                    }
+                    
+                    $bookData = [
+                        'title' => $volumeInfo['title'] ?? 'Livro Desconhecido',
+                        'author' => isset($volumeInfo['authors']) ? implode(', ', $volumeInfo['authors']) : 'Autor Desconhecido',
+                        'genre' => isset($volumeInfo['categories']) ? $volumeInfo['categories'][0] : '',
+                        'cover_url' => $gCover
+                    ];
+                }
+            }
+        }
+
+        // 3. OpenLibrary fallback
+        if (!$bookData) {
+            $olUrl = "https://openlibrary.org/api/books?bibkeys=ISBN:{$cleanIsbn}&format=json&jscmd=data";
+            $olResponse = Http::get($olUrl);
+            
+            if ($olResponse->successful()) {
+                $data = $olResponse->json();
+                $key = "ISBN:{$cleanIsbn}";
+                if (isset($data[$key])) {
+                    $bookData = [
+                        'title' => $data[$key]['title'] ?? 'Livro Desconhecido',
+                        'author' => $data[$key]['authors'][0]['name'] ?? 'Autor Desconhecido',
+                        'genre' => '',
+                        'cover_url' => $coverUrl
+                    ];
+                }
+            }
+        }
+
+        if (!$bookData) {
+            return response()->json([
+                'message' => 'Livro não encontrado. Separe para cadastro manual.'
+            ], 404);
+        }
+
+        // Create new book
+        $newBook = new Book([
+            'isbn' => $request->isbn,
+            'title' => $bookData['title'],
+            'author' => $bookData['author'],
+            'genre' => $bookData['genre'],
+            'total_quantity' => 1,
+            'available_quantity' => 1,
+            'cover_url' => $bookData['cover_url']
+        ]);
+        $newBook->school_id = auth()->user()->school_id;
+        $newBook->save();
+
+        return response()->json([
+            'message' => 'Novo livro cadastrado!',
+            'book' => $newBook
+        ], 201);
+    }
+
+    /**
      * volta um livro específico
      */
     public function show(string $id)
@@ -149,7 +271,12 @@ class BookController extends Controller
         }
 
         // 3. Fallback: Tentar no Google Books
+        $apiKey = config('services.google_books.key');
         $googleUrl = "https://www.googleapis.com/books/v1/volumes?q=isbn:{$cleanIsbn}";
+        if (!empty($apiKey)) {
+            $googleUrl .= "&key={$apiKey}";
+        }
+        
         $googleResponse = Http::get($googleUrl);
 
         if ($googleResponse->successful()) {

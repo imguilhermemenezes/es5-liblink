@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { Search, Plus, Trash2, Edit2 } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, ScanLine } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '../components/Pagination';
 
@@ -10,8 +10,11 @@ export default function Books() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showScannerModal, setShowScannerModal] = useState(false);
+    const [scannerInput, setScannerInput] = useState('');
+    const [isScanning, setIsScanning] = useState(false);
 
-    // Pagination & Search States
+    // Estados de paginação e busca
     const [currentPage, setCurrentPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
@@ -30,6 +33,7 @@ export default function Books() {
         return () => clearTimeout(delayDebounceFn);
     }, [searchQuery]);
 
+    // Busca de livros na API
     const fetchBooks = async (page = 1, search = '') => {
         setLoading(true);
         try {
@@ -45,6 +49,7 @@ export default function Books() {
         }
     };
 
+    // Busca de livros por ISBN no Google Books
     const handleSearchISBN = async () => {
         if (!isbnSearch) return;
         setIsSearching(true);
@@ -83,6 +88,7 @@ export default function Books() {
         setShowModal(true);
     };
 
+    // Cadastro de livros
     const handleSaveBook = async (e, forceAddQuantity = false) => {
         if (e) e.preventDefault();
         setIsSaving(true);
@@ -125,6 +131,32 @@ export default function Books() {
         }
     };
 
+    // Scan em sequência
+    const handleScanBarcode = async (e) => {
+        if (e.key === 'Escape') {
+            setShowScannerModal(false);
+            return;
+        }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!scannerInput.trim()) return;
+
+            setIsScanning(true);
+            try {
+                const res = await api.post('/books/scan', { isbn: scannerInput.trim() });
+                toast.success(res.data.message || 'Livro registrado com sucesso!');
+                setScannerInput('');
+                fetchBooks(currentPage, searchQuery);
+            } catch (err) {
+                toast.error(err.response?.data?.message || 'Erro ao bipar livro. Cadastre manualmente.');
+                setScannerInput(''); // still clear to keep flow going
+            } finally {
+                setIsScanning(false);
+            }
+        }
+    };
+
+    // Modal de cadastro de livro
     const openCreateModal = () => {
         setEditId(null);
         setBookForm({ isbn: '', title: '', author: '', genre: '', total_quantity: 1, cover_url: '', created_at: '' });
@@ -132,6 +164,7 @@ export default function Books() {
         setShowModal(true);
     };
 
+    // Exclusão de livros
     const handleDelete = (id) => {
         toast((t) => (
             <div>
@@ -153,6 +186,7 @@ export default function Books() {
         ), { duration: 5000 });
     };
 
+    // Renderização da página
     return (
         <div>
             <div className="flex justify-between items-center mb-4">
@@ -168,7 +202,7 @@ export default function Books() {
             ) : (
                 <>
 
-                    {/* Admin Table View */}
+                    {/* Visualização em Tabela para Administradores */}
                     {user.role === 'admin' ? (
                         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                             <div className="flex justify-between items-center" style={{ padding: '1.5rem', backgroundColor: 'var(--color-background)' }}>
@@ -180,6 +214,9 @@ export default function Books() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         style={{ padding: '0.5rem 1rem', width: '250px', backgroundColor: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)' }}
                                     />
+                                    <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => setShowScannerModal(true)}>
+                                        <ScanLine size={18} /> Scanner
+                                    </button>
                                     <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontWeight: 600 }} onClick={openCreateModal}>
                                         + Cadastrar Livro
                                     </button>
@@ -232,7 +269,7 @@ export default function Books() {
                             </table>
                         </div>
                     ) : (
-                        /* Librarian Grid View */
+                        /* Visualização em Grade para Bibliotecários */
                         <div>
                             <div className="flex justify-between items-center mb-4">
                                 <input
@@ -241,6 +278,9 @@ export default function Books() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     style={{ padding: '0.5rem', width: '300px' }}
                                 />
+                                <button className="btn btn-secondary" style={{ padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }} onClick={() => setShowScannerModal(true)}>
+                                    <ScanLine size={18} /> Scanner
+                                </button>
                                 <button className="btn btn-primary" onClick={openCreateModal}>
                                     <Plus size={18} /> Cadastrar Livro
                                 </button>
@@ -363,6 +403,38 @@ export default function Books() {
                                 </div>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Scanner */}
+            {showScannerModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '2rem', textAlign: 'center' }}>
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><ScanLine /> Modo Scanner</h3>
+                            <button onClick={() => setShowScannerModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
+                        </div>
+                        <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>Bipe o código de barras do livro. O sistema salvará automaticamente a cada bipe.</p>
+
+                        <div className="form-group">
+                            <input
+                                autoFocus
+                                disabled={isScanning}
+                                value={scannerInput}
+                                onChange={(e) => setScannerInput(e.target.value)}
+                                onKeyDown={handleScanBarcode}
+                                placeholder={isScanning ? "Processando..." : "Aguardando leitura (ISBN)..."}
+                                style={{
+                                    padding: '1rem',
+                                    fontSize: '1.25rem',
+                                    textAlign: 'center',
+                                    width: '100%',
+                                    backgroundColor: isScanning ? 'var(--color-surface)' : 'white'
+                                }}
+                            />
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '1rem' }}>Aperte ESC para fechar.</p>
                     </div>
                 </div>
             )}

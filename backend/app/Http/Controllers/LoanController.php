@@ -66,6 +66,8 @@ class LoanController extends Controller
             ], 409); // Conflict
         }
 
+        // Se tiver atraso, calcular multa e atualizar empréstimo
+        
         try {
             DB::beginTransaction();
 
@@ -74,7 +76,7 @@ class LoanController extends Controller
                 'user_id' => auth()->id(), // bibliotecário
                 'student_id' => $student->id,
                 'loan_date' => Carbon::now(),
-                'due_date' => $request->due_date ?? Carbon::now()->addDays(auth()->user()->school->max_loan_days ?? 14),
+                'due_date' => $request->due_date ?? Carbon::now()->addDays(auth()->user()->school->max_loan_days ?? 7),
                 'status' => 'active'
             ]);
             
@@ -98,6 +100,7 @@ class LoanController extends Controller
         return response()->json($loan);
     }
 
+    //update empréstimo
     public function update(Request $request, string $id)
     {
         $loan = Loan::findOrFail($id);

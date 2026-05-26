@@ -18,6 +18,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Books
+    Route::post('/books/scan', [App\Http\Controllers\BookController::class, 'scan']);
     Route::get('/books/search/{isbn}', [App\Http\Controllers\BookController::class, 'searchByIsbn']);
     Route::apiResource('books', App\Http\Controllers\BookController::class);
 
