@@ -10,33 +10,16 @@ echo.
 
 :: 1. Verificar se o PHP está instalado
 where php >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [❌ ERRO] O PHP não está instalado ou não está configurado no PATH do sistema.
-    echo Por favor, instale o PHP (versão 8.2 ou superior) ou use o XAMPP/Laragon antes de prosseguir.
-    echo.
-    pause
-    exit /b
-)
+if %errorlevel% neq 0 goto err_php
 
 :: 2. Verificar se o Composer está instalado
 where composer >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [❌ ERRO] O Composer não está instalado ou não está configurado no PATH do sistema.
-    echo Por favor, instale o Composer (https://getcomposer.org/) antes de prosseguir.
-    echo.
-    pause
-    exit /b
-)
+if %errorlevel% neq 0 goto err_composer
 
 :: 3. Verificar se o Node.js/NPM está instalado
 where npm >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [❌ ERRO] O Node.js/NPM não está instalado ou não está configurado no PATH do sistema.
-    echo Por favor, instale o Node.js (https://nodejs.org/) antes de prosseguir.
-    echo.
-    pause
-    exit /b
-)
+if %errorlevel% neq 0 goto err_node
+
 
 :: 4. Configuração do Back-end
 echo [1/4] Configurando o Back-end (Laravel)...
@@ -99,19 +82,22 @@ if /i "%criar_banco%"=="s" (
     cd ..
 )
 
-:: 7. Inicializando os servidores!
+:: 7. Inicializando os servidores ocultos (em background)!
 echo.
-echo [4/4] Inicializando os servidores locais...
+echo [4/4] Inicializando os servidores em segundo plano...
 echo.
 
-:: Iniciar Backend Laravel em segundo plano / nova janela minimizada ou normal
-start "Liblink - API (Laravel)" cmd /k "cd backend && php artisan serve"
+:: Cria um script temporário VBScript para rodar as janelas em modo 100% oculto
+echo Set WshShell = CreateObject("WScript.Shell") > temp_run.vbs
+echo WshShell.Run "cmd /c cd backend && php artisan serve", 0, false >> temp_run.vbs
+echo WshShell.Run "cmd /c cd frontend && npm run dev", 0, false >> temp_run.vbs
 
-:: Iniciar Frontend Vite em segundo plano / nova janela
-start "Liblink - Frontend (Vite)" cmd /k "cd frontend && npm run dev"
+:: Executa o script oculto e depois deleta o arquivo temporário
+wscript.exe temp_run.vbs
+del temp_run.vbs
 
 echo =================================================================
-echo   🎉 [SUCESSO] Os servidores estão sendo iniciados!
+echo   🎉 [SUCESSO] Os servidores estão rodando silenciosamente!
 echo   💻 Backend: http://localhost:8000
 echo   🌐 Frontend: http://localhost:5173
 echo.
@@ -124,7 +110,29 @@ timeout /t 3 /nobreak > nul
 start http://localhost:5173
 
 echo.
-echo   Tudo pronto! Você pode fechar esta janela principal. 
-echo   Deixe abertas as janelas secundárias que foram abertas para o Backend e Frontend.
+echo   Tudo pronto! Esta janela irá se fechar automaticamente.
+echo   Nenhuma janela preta ficará aberta na sua barra de tarefas.
+echo.
+timeout /t 3 /nobreak > nul
+exit
+
+:err_php
+echo [❌ ERRO] O PHP não está instalado ou não está configurado no PATH do sistema.
+echo Por favor, instale o PHP (versão 8.2 ou superior) ou use o XAMPP/Laragon antes de prosseguir.
 echo.
 pause
+exit /b
+
+:err_composer
+echo [❌ ERRO] O Composer não está instalado ou não está configurado no PATH do sistema.
+echo Por favor, instale o Composer (https://getcomposer.org/) antes de prosseguir.
+echo.
+pause
+exit /b
+
+:err_node
+echo [❌ ERRO] O Node.js/NPM não está instalado ou não está configurado no PATH do sistema.
+echo Por favor, instale o Node.js (https://nodejs.org/) antes de prosseguir.
+echo.
+pause
+exit /b
