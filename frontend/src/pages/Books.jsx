@@ -1,12 +1,18 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { Search, Plus, Trash2, Edit2, ScanLine } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, Trash2, Edit2, ScanLine, BookDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '../components/Pagination';
 
 export default function Books() {
     const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const handleBorrow = (book) => {
+        navigate('/loans', { state: { selectBook: book } });
+    };
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -260,6 +266,14 @@ export default function Books() {
                                                 )}
                                             </td>
                                             <td>
+                                                <button 
+                                                    onClick={() => handleBorrow(book)} 
+                                                    disabled={book.available_quantity <= 0}
+                                                    title="Emprestar Livro"
+                                                    style={{ border: 'none', background: 'none', cursor: book.available_quantity > 0 ? 'pointer' : 'not-allowed', marginRight: '0.75rem', color: book.available_quantity > 0 ? 'var(--color-primary)' : 'var(--color-text-muted)' }}
+                                                >
+                                                    <BookDown size={16} />
+                                                </button>
                                                 <button onClick={() => handleEdit(book)} style={{ border: 'none', background: 'none', cursor: 'pointer', marginRight: '0.75rem', color: 'var(--color-text-main)' }}><Edit2 size={16} /></button>
                                                 <button onClick={() => handleDelete(book.id)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--color-danger)' }}><Trash2 size={16} /></button>
                                             </td>
@@ -301,7 +315,16 @@ export default function Books() {
                                         <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem' }}>{book.author}</p>
 
                                         {book.available_quantity > 0 ? (
-                                            <span style={{ backgroundColor: 'var(--color-success)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', marginTop: 'auto' }}>Disponível ({book.available_quantity})</span>
+                                            <>
+                                                <span style={{ backgroundColor: 'var(--color-success)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', marginTop: 'auto', marginBottom: '0.5rem' }}>Disponível ({book.available_quantity})</span>
+                                                <button 
+                                                    onClick={() => handleBorrow(book)}
+                                                    className="btn btn-primary"
+                                                    style={{ width: '100%', fontSize: '0.8rem', padding: '0.4rem', marginTop: '0.25rem' }}
+                                                >
+                                                    Emprestar
+                                                </button>
+                                            </>
                                         ) : (
                                             <span style={{ backgroundColor: 'var(--color-danger)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', marginTop: 'auto' }}>Indisponível</span>
                                         )}

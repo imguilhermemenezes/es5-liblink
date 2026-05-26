@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../api/axios';
+import { useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '../components/Pagination';
@@ -19,12 +20,27 @@ export default function Loans() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSearchingBooks, setIsSearchingBooks] = useState(false);
 
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state?.selectBook) {
+            const selectedBook = location.state.selectBook;
+            setBooks([selectedBook]);
+            setNewLoan(prev => ({ ...prev, book_id: selectedBook.id }));
+            setShowModal(true);
+            
+            // Limpa o estado no histórico para evitar que o modal abra novamente ao recarregar a página (F5)
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             fetchLoans(1, search);
         }, 500);
         return () => clearTimeout(delayDebounceFn);
     }, [search]);
+
 
     const fetchLoans = async (page = 1, searchQuery = '') => {
         setLoading(true);

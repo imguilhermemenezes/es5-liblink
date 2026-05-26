@@ -32,6 +32,7 @@ echo.
 echo     ⚠️  [IMPORTANTE] Um novo arquivo backend/.env foi criado.
 echo     ⚠️  Abra-o e edite as credenciais se elas forem diferentes do padrao.
 echo.
+set first_run=1
 :env_exists
 
 if exist vendor goto vendor_exists
@@ -69,6 +70,7 @@ echo     -> Dependências do Node (NPM) já estão instaladas.
 cd ..
 
 :: 6. Configuração do Banco de Dados
+if "%first_run%" neq "1" goto migrate_done
 echo.
 echo [3/4] Configuração do Banco de Dados...
 echo     -> ATENÇÃO: Certifique-se de que o MySQL do seu XAMPP ou Laragon está LIGADO!
