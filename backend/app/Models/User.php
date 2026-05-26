@@ -33,6 +33,8 @@ class User extends Authenticatable
         'password',
         'school_id',
         'status',
+        'role',
+        'document',
     ];
 
     /**
