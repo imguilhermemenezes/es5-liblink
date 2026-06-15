@@ -37,22 +37,22 @@ export default function Login() {
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label>E-mail</label>
-                        <input 
-                            type="email" 
-                            required 
-                            value={email} 
-                            onChange={e => setEmail(e.target.value)} 
-                            placeholder="biblioteca@escola.com" 
+                        <input
+                            type="email"
+                            required
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            placeholder="biblioteca@escola.com"
                         />
                     </div>
                     <div className="form-group">
                         <label>Senha</label>
-                        <input 
-                            type="password" 
-                            required 
-                            value={password} 
-                            onChange={e => setPassword(e.target.value)} 
-                            placeholder="••••••••" 
+                        <input
+                            type="password"
+                            required
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            placeholder="••••••••"
                         />
                     </div>
                     <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
@@ -63,7 +63,7 @@ export default function Login() {
                 <div className="text-center mt-4">
                     <p>Ainda não registrou sua escola?</p>
                     <Link to="/onboarding" className="mt-1" style={{ display: 'inline-block' }}>
-                        Cadastre-se aqui (Onboarding)
+                        Cadastre-se aqui
                     </Link>
                 </div>
             </div>
