@@ -40,6 +40,7 @@ class BookController extends Controller
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'genre' => 'nullable|string|max:255',
+            'cdd_cdu' => 'nullable|string|max:255',
             'cover_url' => 'nullable|string|max:1000',
             'total_quantity' => 'required|integer|min:1',
         ]);
@@ -182,6 +183,7 @@ class BookController extends Controller
             'title' => $bookData['title'],
             'author' => $bookData['author'],
             'genre' => $bookData['genre'],
+            'cdd_cdu' => $bookData['cdd_cdu'] ?? null,
             'total_quantity' => 1,
             'available_quantity' => 1,
             'cover_url' => $bookData['cover_url']
@@ -216,6 +218,7 @@ class BookController extends Controller
             'title' => 'sometimes|required|string|max:255',
             'author' => 'sometimes|required|string|max:255',
             'genre' => 'nullable|string|max:255',
+            'cdd_cdu' => 'nullable|string|max:255',
             'cover_url' => 'nullable|string|max:1000',
             'total_quantity' => 'sometimes|required|integer|min:1',
         ]);
@@ -266,7 +269,8 @@ class BookController extends Controller
                 'author' => isset($data['authors']) && count($data['authors']) > 0 ? implode(', ', $data['authors']) : '',
                 'genre' => isset($data['subjects']) && count($data['subjects']) > 0 ? $data['subjects'][0] : '',
                 'isbn' => $isbn,
-                'cover_url' => $data['cover_url'] ?? "https://covers.openlibrary.org/b/isbn/{$cleanIsbn}-L.jpg"
+                'cover_url' => $data['cover_url'] ?? "https://covers.openlibrary.org/b/isbn/{$cleanIsbn}-L.jpg",
+                'cdd_cdu' => null
             ]);
         }
 
@@ -295,7 +299,8 @@ class BookController extends Controller
                     'author' => isset($volumeInfo['authors']) ? implode(', ', $volumeInfo['authors']) : '',
                     'genre' => isset($volumeInfo['categories']) ? $volumeInfo['categories'][0] : '',
                     'isbn' => $isbn,
-                    'cover_url' => $coverUrl
+                    'cover_url' => $coverUrl,
+                    'cdd_cdu' => null
                 ]);
             }
         }
@@ -315,7 +320,8 @@ class BookController extends Controller
                     'author' => $bookData['authors'][0]['name'] ?? '',
                     'genre' => '',
                     'isbn' => $isbn,
-                    'cover_url' => "https://covers.openlibrary.org/b/isbn/{$cleanIsbn}-L.jpg"
+                    'cover_url' => "https://covers.openlibrary.org/b/isbn/{$cleanIsbn}-L.jpg",
+                    'cdd_cdu' => null
                 ]);
             }
         }

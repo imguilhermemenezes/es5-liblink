@@ -53,6 +53,21 @@ class LoanController extends Controller
             'school_id' => auth()->user()->school_id,
         ]);
 
+        // Verificar se a escola proíbe múltiplos empréstimos ativos para um mesmo aluno
+        $school = auth()->user()->school;
+        if ($school && $school->block_multiple_loans) {
+            $hasActiveLoan = Loan::where('student_id', $student->id)
+                ->where('status', 'active')
+                ->exists();
+
+            if ($hasActiveLoan) {
+                return response()->json([
+                    'message' => 'Este aluno já possui um empréstimo ativo. Conforme as regras da escola, novos empréstimos são proibidos até que o livro pendente seja devolvido.',
+                    'blocked' => true
+                ], 400);
+            }
+        }
+
         // Verificar se aluno tem empréstimos atrasados
         $overdueLoans = Loan::where('student_id', $student->id)
             ->where('status', 'active')
@@ -122,10 +137,17 @@ class LoanController extends Controller
             return response()->json(['message' => 'Este empréstimo não está ativo.'], 400);
         }
 
+        $request->validate([
+            'return_observations' => 'nullable|string'
+        ]);
+
         try {
             DB::beginTransaction();
 
-            $loan->update(['status' => 'returned']);
+            $loan->update([
+                'status' => 'returned',
+                'return_observations' => $request->return_observations
+            ]);
             $loan->book()->increment('available_quantity');
 
             DB::commit();

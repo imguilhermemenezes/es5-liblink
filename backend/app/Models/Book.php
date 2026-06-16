@@ -18,6 +18,7 @@ class Book extends Model
         'title',
         'author',
         'genre',
+        'cdd_cdu',
         'total_quantity',
         'available_quantity',
         'cover_url',

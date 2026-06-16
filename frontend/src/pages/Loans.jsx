@@ -20,6 +20,10 @@ export default function Loans() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSearchingBooks, setIsSearchingBooks] = useState(false);
 
+    const [showReturnModal, setShowReturnModal] = useState(false);
+    const [returnLoanId, setReturnLoanId] = useState(null);
+    const [returnObservations, setReturnObservations] = useState('');
+
     const location = useLocation();
 
     useEffect(() => {
@@ -102,24 +106,23 @@ export default function Loans() {
     };
 
     const handleReturn = (id) => {
-        toast((t) => (
-            <div>
-                <p>Confirmar devolução deste livro?</p>
-                <div className="flex gap-2 justify-end mt-2">
-                    <button className="btn btn-secondary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }} onClick={() => toast.dismiss(t.id)}>Cancelar</button>
-                    <button className="btn btn-primary" style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }} onClick={async () => {
-                        toast.dismiss(t.id);
-                        try {
-                            await api.post(`/loans/${id}/return`);
-                            toast.success('Livro devolvido com sucesso!');
-                            fetchLoans(currentPage, search);
-                        } catch (e) {
-                            toast.error('Erro ao devolver.');
-                        }
-                    }}>Confirmar</button>
-                </div>
-            </div>
-        ), { duration: 5000 });
+        setReturnLoanId(id);
+        setReturnObservations('');
+        setShowReturnModal(true);
+    };
+
+    const handleReturnSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await api.post(`/loans/${returnLoanId}/return`, { return_observations: returnObservations });
+            toast.success('Livro devolvido com sucesso!');
+            setShowReturnModal(false);
+            setReturnLoanId(null);
+            setReturnObservations('');
+            fetchLoans(currentPage, search);
+        } catch (e) {
+            toast.error(e.response?.data?.message || 'Erro ao processar devolução.');
+        }
     };
 
     return (
@@ -152,6 +155,7 @@ export default function Loans() {
                                 <th>Data Realização</th>
                                 <th>Prazo Final</th>
                                 <th>Status</th>
+                                <th>Observações</th>
                                 <th>Ação</th>
                             </tr>
                         </thead>
@@ -174,6 +178,13 @@ export default function Loans() {
                                             <span style={{ backgroundColor: 'var(--color-warning)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Pendente</span>
                                         ) : (
                                             <span style={{ backgroundColor: 'var(--color-success)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Devolvido</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        {loan.return_observations ? (
+                                            <span style={{ fontStyle: 'italic', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{loan.return_observations}</span>
+                                        ) : (
+                                            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>-</span>
                                         )}
                                     </td>
                                     <td>
@@ -264,6 +275,42 @@ export default function Loans() {
                                 <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
                                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                                     {isSubmitting ? 'Registrando...' : 'Emprestar Livro'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Modal de Devolução com Observações */}
+            {showReturnModal && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '2rem' }}>
+                        <h3 className="mb-4">Confirmar Devolução</h3>
+                        <p style={{ marginBottom: '1.5rem', color: 'var(--color-text-muted)' }}>Deseja registrar a devolução deste livro? Você pode adicionar observações sobre o estado do livro ou da devolução abaixo:</p>
+                        
+                        <form onSubmit={handleReturnSubmit}>
+                            <div className="form-group">
+                                <label>Observações (Opcional)</label>
+                                <textarea
+                                    value={returnObservations}
+                                    onChange={e => setReturnObservations(e.target.value)}
+                                    placeholder="Ex: Livro devolvido com a capa levemente rasgada."
+                                    style={{
+                                        width: '100%',
+                                        height: '100px',
+                                        padding: '0.5rem',
+                                        borderRadius: 'var(--radius-md)',
+                                        border: '1px solid var(--color-border)',
+                                        backgroundColor: 'white',
+                                        resize: 'vertical'
+                                    }}
+                                />
+                            </div>
+                            
+                            <div className="flex justify-end gap-2 mt-4">
+                                <button type="button" className="btn btn-secondary" onClick={() => { setShowReturnModal(false); setReturnLoanId(null); }}>Cancelar</button>
+                                <button type="submit" className="btn btn-primary">
+                                    Registrar Devolução
                                 </button>
                             </div>
                         </form>

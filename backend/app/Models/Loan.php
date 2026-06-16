@@ -20,6 +20,7 @@ class Loan extends Model
         'loan_date',
         'due_date',
         'status',
+        'return_observations',
     ];
 
     public function school(): BelongsTo

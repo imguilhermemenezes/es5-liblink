@@ -4,9 +4,9 @@ import { useAuth, setAppColors } from '../context/AuthContext';
 import { Upload } from 'lucide-react';
 
 export default function Settings() {
-    const { school, user } = useAuth();
+    const { school, setSchool, user } = useAuth();
     const [config, setConfig] = useState({
-        name: '', max_loan_days: 14, max_books_per_student: 3, logo_url: '',
+        name: '', max_loan_days: 14, max_books_per_student: 3, block_multiple_loans: false, logo_url: '',
         primary_color: '#B3D0D8', penalty_fine_per_day: 0, penalty_block_loans: true
     });
 
@@ -17,8 +17,9 @@ export default function Settings() {
     const handleSaveConfig = async (e) => {
         e.preventDefault();
         try {
-            await api.put('/settings/school', config);
-            setAppColors(config.primary_color);
+            const res = await api.put('/settings/school', config);
+            setSchool(res.data.school);
+            setAppColors(res.data.school.primary_color);
             alert('Configurações salvas!');
         } catch (e) {
             alert('Erro ao salvar configurações');
@@ -101,6 +102,16 @@ export default function Settings() {
                             onChange={e => setConfig({ ...config, penalty_block_loans: e.target.checked })}
                         />
                         <label style={{ margin: 0 }}>Bloquear novos empréstimos para alunos com pendências?</label>
+                    </div>
+
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <input
+                            type="checkbox"
+                            style={{ width: 'auto' }}
+                            checked={config.block_multiple_loans}
+                            onChange={e => setConfig({ ...config, block_multiple_loans: e.target.checked })}
+                        />
+                        <label style={{ margin: 0 }}>Proibir que aluno com livro emprestado pegue outro?</label>
                     </div>
 
                     <button type="submit" className="btn btn-primary mt-4" style={{ width: '100%' }}>Salvar Alterações</button>

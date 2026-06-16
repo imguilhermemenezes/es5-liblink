@@ -29,7 +29,7 @@ export default function Books() {
     const [isbnSearch, setIsbnSearch] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [bookForm, setBookForm] = useState({
-        isbn: '', title: '', author: '', genre: '', total_quantity: 1, cover_url: '', created_at: ''
+        isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: ''
     });
 
     useEffect(() => {
@@ -67,6 +67,7 @@ export default function Books() {
                 title: res.data.title,
                 author: res.data.author,
                 genre: res.data.genre || '',
+                cdd_cdu: res.data.cdd_cdu || '',
                 cover_url: res.data.cover_url || ''
             });
             toast.success('Livro encontrado!');
@@ -86,6 +87,7 @@ export default function Books() {
             title: book.title,
             author: book.author,
             genre: book.genre || '',
+            cdd_cdu: book.cdd_cdu || '',
             total_quantity: book.total_quantity,
             cover_url: book.cover_url || '',
             created_at: book.created_at
@@ -104,7 +106,7 @@ export default function Books() {
                 toast.success('Livro atualizado com sucesso!');
                 setShowModal(false);
                 setEditId(null);
-                setBookForm({ isbn: '', title: '', author: '', genre: '', total_quantity: 1, cover_url: '', created_at: '' });
+                setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
                 fetchBooks(currentPage, searchQuery);
             } else {
                 const payload = { ...bookForm, force_add_quantity: forceAddQuantity };
@@ -112,7 +114,7 @@ export default function Books() {
                 toast.success(forceAddQuantity ? 'Quantidade adicionada ao livro existente!' : 'Livro cadastrado com sucesso!');
                 setShowModal(false);
                 setEditId(null);
-                setBookForm({ isbn: '', title: '', author: '', genre: '', total_quantity: 1, cover_url: '', created_at: '' });
+                setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
                 fetchBooks(currentPage, searchQuery);
             }
         } catch (e) {
@@ -165,7 +167,7 @@ export default function Books() {
     // Modal de cadastro de livro
     const openCreateModal = () => {
         setEditId(null);
-        setBookForm({ isbn: '', title: '', author: '', genre: '', total_quantity: 1, cover_url: '', created_at: '' });
+        setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
         setIsbnSearch('');
         setShowModal(true);
     };
@@ -237,6 +239,7 @@ export default function Books() {
                                         <th>Qtd</th>
                                         <th>Título / Autor</th>
                                         <th>Gênero</th>
+                                        <th>CDD/CDU</th>
                                         <th>Status</th>
                                         <th>Ações</th>
                                     </tr>
@@ -258,6 +261,7 @@ export default function Books() {
                                                 <span style={{ color: 'var(--color-text-muted)' }}>{book.author}</span>
                                             </td>
                                             <td>{book.genre || '-'}</td>
+                                            <td>{book.cdd_cdu || '-'}</td>
                                             <td>
                                                 {book.available_quantity > 0 ? (
                                                     <span style={{ backgroundColor: 'var(--color-success)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>Disponível</span>
@@ -313,6 +317,7 @@ export default function Books() {
                                         )}
                                         <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>{book.title}</h4>
                                         <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem' }}>{book.author}</p>
+                                        {book.cdd_cdu && <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>CDD/CDU: {book.cdd_cdu}</p>}
 
                                         {book.available_quantity > 0 ? (
                                             <>
@@ -401,6 +406,10 @@ export default function Books() {
                                     <div className="form-group">
                                         <label>Gênero</label>
                                         <input value={bookForm.genre} onChange={e => setBookForm({ ...bookForm, genre: e.target.value })} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>CDD / CDU</label>
+                                        <input value={bookForm.cdd_cdu} onChange={e => setBookForm({ ...bookForm, cdd_cdu: e.target.value })} placeholder="Ex: 823.914" />
                                     </div>
                                     <div className="form-group">
                                         <label>Quantidade Total</label>

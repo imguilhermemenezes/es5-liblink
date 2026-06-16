@@ -13,6 +13,7 @@ class School extends Model
         'name',
         'max_loan_days',
         'max_books_per_student',
+        'block_multiple_loans',
         'logo_url',
         'primary_color',
         'penalty_fine_per_day',

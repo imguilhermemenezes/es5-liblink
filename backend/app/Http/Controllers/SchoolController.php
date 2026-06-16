@@ -79,6 +79,7 @@ class SchoolController extends Controller
             'name' => 'sometimes|string|max:255',
             'max_loan_days' => 'sometimes|integer|min:1',
             'max_books_per_student' => 'sometimes|integer|min:1',
+            'block_multiple_loans' => 'sometimes|boolean',
             'logo_url' => 'nullable|string|max:1000',
             'primary_color' => 'sometimes|string|max:7',
             'penalty_fine_per_day' => 'sometimes|numeric|min:0',
@@ -86,7 +87,7 @@ class SchoolController extends Controller
         ]);
 
         $school->update($request->only([
-            'name', 'max_loan_days', 'max_books_per_student', 'logo_url', 
+            'name', 'max_loan_days', 'max_books_per_student', 'block_multiple_loans', 'logo_url', 
             'primary_color', 'penalty_fine_per_day', 'penalty_block_loans'
         ]));
 
