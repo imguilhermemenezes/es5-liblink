@@ -34,7 +34,6 @@ class User extends Authenticatable
         'school_id',
         'status',
         'role',
-        'document',
     ];
 
     /**

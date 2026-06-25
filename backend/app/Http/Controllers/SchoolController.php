@@ -19,7 +19,6 @@ class SchoolController extends Controller
             'admin_name' => 'required|string|max:255',
             'admin_email' => 'required|string|email|max:255|unique:users,email',
             'admin_password' => 'required|string|min:8|confirmed',
-            'admin_document' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -40,7 +39,6 @@ class SchoolController extends Controller
                 'school_id' => $school->id,
                 'role' => 'admin',
                 'status' => true,
-                'document' => $request->admin_document,
             ]);
 
             DB::commit();

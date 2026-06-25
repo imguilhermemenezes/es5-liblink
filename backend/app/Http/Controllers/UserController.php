@@ -30,7 +30,6 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'document' => 'nullable|string|max:255',
             'role' => 'nullable|in:admin,librarian',
         ]);
 
@@ -68,7 +67,6 @@ class UserController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:8',
-            'document' => 'nullable|string|max:255',
             'status' => 'sometimes|boolean',
         ]);
 
