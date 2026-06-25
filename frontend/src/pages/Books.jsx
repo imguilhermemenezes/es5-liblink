@@ -212,8 +212,8 @@ export default function Books() {
 
                     {/* Visualização em Tabela para Administradores */}
                     {user.role === 'admin' ? (
-                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                            <div className="flex justify-between items-center" style={{ padding: '1.5rem', backgroundColor: 'var(--color-background)' }}>
+                        <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
+                            <div className="flex justify-between items-center" style={{ padding: '1.5rem', backgroundColor: 'var(--color-background)', flexWrap: 'wrap', gap: '1rem' }}>
                                 <h3 style={{ margin: 0, color: 'var(--color-text-main)' }}>Tabela de Livros</h3>
                                 <div className="flex gap-4">
                                     <input
@@ -372,7 +372,7 @@ export default function Books() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSaveBook} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
+                        <form className="responsive-grid" onSubmit={handleSaveBook} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
                             {/* Left Col: Cover */}
                             <div>
                                 <div style={{ width: '100%', height: '300px', backgroundColor: 'var(--color-background)', border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem', overflow: 'hidden' }}>
@@ -398,7 +398,7 @@ export default function Books() {
                                     <label>Autor</label>
                                     <input value={bookForm.author} onChange={e => setBookForm({ ...bookForm, author: e.target.value })} required />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                     <div className="form-group">
                                         <label>ISBN</label>
                                         <input value={bookForm.isbn} onChange={e => setBookForm({ ...bookForm, isbn: e.target.value })} required />

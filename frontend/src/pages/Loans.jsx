@@ -127,7 +127,7 @@ export default function Loans() {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4" style={{ flexWrap: 'wrap', gap: '1rem' }}>
                 <h2>Gestão de Empréstimos e Devoluções</h2>
                 <div className="flex gap-4">
                     <div style={{ position: 'relative' }}>
@@ -143,7 +143,7 @@ export default function Loans() {
                 </div>
             </div>
 
-            <div className="card">
+            <div className="card" style={{ overflowX: 'auto' }}>
                 <h3 className="mb-4">Tabela de Livros (Histórico e Ativos)</h3>
                 {loans.length > 0 ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
@@ -261,7 +261,7 @@ export default function Loans() {
                                     )}
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                            <div className="responsive-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
                                 <div className="form-group">
                                     <label>Nome do Aluno</label>
                                     <input required value={newLoan.student_name} onChange={e => setNewLoan({ ...newLoan, student_name: e.target.value })} placeholder="Nome completo do aluno" />

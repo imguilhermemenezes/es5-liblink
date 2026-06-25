@@ -60,7 +60,7 @@ export default function Dashboard() {
                         {/* Registro de Atrasos */}
                         <div>
                             <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Registro de Atrasos</h3>
-                            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                            <div className="card" style={{ padding: 0, overflowX: 'auto' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
                                     <thead style={{ backgroundColor: 'var(--color-background)' }}>
                                         <tr>
