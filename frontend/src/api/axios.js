@@ -2,7 +2,7 @@ import axios from 'axios';
 
 //conexão com backend
 const api = axios.create({
-    baseURL: 'http://127.0.0.1:8000/api',
+    baseURL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`,
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json'
