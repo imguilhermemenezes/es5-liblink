@@ -39,12 +39,15 @@ class LoanController extends Controller
             'student_name' => 'required|string|max:255',
             'student_class' => 'required|string|max:255',
             'due_date' => 'nullable|date',
+        ], [
+            'student_name.required' => 'Por favor, preencha todos os dados do aluno.',
+            'student_class.required' => 'Por favor, preencha todos os dados do aluno.',
         ]);
 
         $book = Book::findOrFail($request->book_id);
 
         if ($book->available_quantity <= 0) {
-            return response()->json(['message' => 'Livro não disponível para empréstimo.'], 400);
+            return response()->json(['message' => 'Operação cancelada. Não há mais exemplares disponíveis.'], 400);
         }
 
         $student = Student::firstOrCreate([
@@ -76,7 +79,7 @@ class LoanController extends Controller
 
         if ($overdueLoans && !$request->has('force')) {
             return response()->json([
-                'message' => 'O aluno possui empréstimos atrasados. Deseja continuar?',
+                'message' => 'Este aluno possui pendências ativas e está impedido.',
                 'requires_confirmation' => true
             ], 409); // Conflict
         }

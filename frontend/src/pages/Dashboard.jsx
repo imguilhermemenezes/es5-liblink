@@ -6,6 +6,7 @@ export default function Dashboard() {
     const { user, school } = useAuth();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -14,6 +15,7 @@ export default function Dashboard() {
                 setData(response.data);
             } catch (err) {
                 console.error(err);
+                setError('Não foi possível carregar os dados do painel no momento.');
             } finally {
                 setLoading(false);
             }
@@ -21,12 +23,18 @@ export default function Dashboard() {
         fetchDashboard();
     }, []);
 
-    const { stats, recent_loans } = data || {};
-    const overdueLoans = recent_loans ? recent_loans.filter(l => l.status === 'active' && new Date(l.due_date) < new Date()) : [];
+    const { stats = {}, recent_loans = [] } = data || {};
+    const overdueLoans = recent_loans.filter(l => l.status === 'active' && new Date(l.due_date) < new Date());
 
     return (
         <div>
             <h2 className="mb-4">Dashboard - {school?.name || 'Biblioteca'}</h2>
+
+            {error && (
+                <div className="card" style={{ borderLeft: '4px solid var(--color-danger)', color: 'var(--color-danger)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <p style={{ margin: 0, fontWeight: 500 }}>{error}</p>
+                </div>
+            )}
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-muted)' }}>
@@ -80,7 +88,7 @@ export default function Dashboard() {
                                                 </tr>
                                             );
                                         }) : (
-                                            <tr><td colSpan="3" style={{ padding: '1rem', textAlign: 'center' }}>Nenhum atraso registrado.</td></tr>
+                                            <tr><td colSpan="3" style={{ padding: '1rem', textAlign: 'center' }}>Nenhum empréstimo em atraso no momento.</td></tr>
                                         )}
                                     </tbody>
                                 </table>

@@ -81,7 +81,7 @@ export default function Team() {
                                     {u.name}
                                 </td>
                                 <td>{u.email}</td>
-                                <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                                <td>{new Date(u.created_at).toLocaleDateString('pt-BR')}</td>
                                 <td>
                                     <span style={{ backgroundColor: 'var(--color-success)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Ativo</span>
                                 </td>

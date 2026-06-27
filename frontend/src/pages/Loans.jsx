@@ -171,8 +171,8 @@ export default function Loans() {
                                     </td>
                                     <td>{loan.book?.title}</td>
                                     <td>{loan.student?.name} <span style={{ color: 'var(--color-text-muted)' }}>({loan.student?.classroom})</span></td>
-                                    <td>{new Date(loan.loan_date).toLocaleDateString()}</td>
-                                    <td>{new Date(loan.due_date).toLocaleDateString()}</td>
+                                    <td>{new Date(loan.loan_date).toLocaleDateString('pt-BR')}</td>
+                                    <td>{new Date(loan.due_date).toLocaleDateString('pt-BR')}</td>
                                     <td>
                                         {loan.status === 'active' ? (
                                             <span style={{ backgroundColor: 'var(--color-warning)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem' }}>Pendente</span>

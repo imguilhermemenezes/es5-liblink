@@ -19,6 +19,14 @@ class School extends Model
         'penalty_fine_per_day',
         'penalty_block_loans',
     ];
+    
+    protected $casts = [
+        'block_multiple_loans' => 'boolean',
+        'penalty_block_loans' => 'boolean',
+        'max_loan_days' => 'integer',
+        'max_books_per_student' => 'integer',
+        'penalty_fine_per_day' => 'float',
+    ];
 
     protected function logoUrl(): Attribute {
         return Attribute::make (

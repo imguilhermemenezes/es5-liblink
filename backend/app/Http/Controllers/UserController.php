@@ -31,6 +31,8 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
             'role' => 'nullable|in:admin,librarian',
+        ], [
+            'email.unique' => 'Este e-mail já está em uso por outro usuário.',
         ]);
 
         $user = new User($request->except('password'));
@@ -68,6 +70,8 @@ class UserController extends Controller
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => 'nullable|string|min:8',
             'status' => 'sometimes|boolean',
+        ], [
+            'email.unique' => 'Este e-mail já está em uso por outro usuário.',
         ]);
 
         $data = $request->except('password');
@@ -89,14 +93,8 @@ class UserController extends Controller
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
-        $user = User::findOrFail($id);
-
-        if ($user->id === $request->user()->id) {
-            return response()->json(['message' => 'Cannot delete yourself.'], 400);
-        }
-
-        $user->delete();
-
-        return response()->json(null, 204);
+        return response()->json([
+            'message' => 'Operação não permitida. Usuários não podem ser excluídos.'
+        ], 400);
     }
 }

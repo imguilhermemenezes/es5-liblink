@@ -18,9 +18,15 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (!$user) {
             return response()->json([
-                'message' => 'Credenciais incorretas.'
+                'message' => 'Identificador não encontrado.'
+            ], 401);
+        }
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json([
+                'message' => 'Senha incorreta para o usuário informado.'
             ], 401);
         }
 

@@ -42,7 +42,12 @@ class BookController extends Controller
             'genre' => 'nullable|string|max:255',
             'cdd_cdu' => 'nullable|string|max:255',
             'cover_url' => 'nullable|string|max:1000',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'total_quantity' => 'required|integer|min:1',
+        ], [
+            'cover_image.image' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'cover_image.mimes' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'cover_image.max' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
         ]);
 
         $existingBook = Book::where('isbn', $request->isbn)
@@ -64,7 +69,11 @@ class BookController extends Controller
             ], 409);
         }
 
-        $data = $request->all();
+        $data = $request->except(['cover_image']);
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_url'] = asset('storage/' . $path);
+        }
         $data['available_quantity'] = $request->total_quantity;
 
         $book = new Book($data);
@@ -173,7 +182,7 @@ class BookController extends Controller
 
         if (!$bookData) {
             return response()->json([
-                'message' => 'Livro não encontrado. Separe para cadastro manual.'
+                'message' => 'Livro não encontrado. Por favor, preencha manualmente.'
             ], 404);
         }
 
@@ -220,10 +229,20 @@ class BookController extends Controller
             'genre' => 'nullable|string|max:255',
             'cdd_cdu' => 'nullable|string|max:255',
             'cover_url' => 'nullable|string|max:1000',
+            'cover_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'total_quantity' => 'sometimes|required|integer|min:1',
+        ], [
+            'cover_image.image' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'cover_image.mimes' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'cover_image.max' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
         ]);
 
-        $data = $request->except(['available_quantity']);
+        $data = $request->except(['available_quantity', 'cover_image']);
+
+        if ($request->hasFile('cover_image')) {
+            $path = $request->file('cover_image')->store('covers', 'public');
+            $data['cover_url'] = asset('storage/' . $path);
+        }
 
         if ($request->has('total_quantity')) {
             $activeLoans = $book->loans()->where('status', 'active')->count();
@@ -246,6 +265,14 @@ class BookController extends Controller
     public function destroy(string $id)
     {
         $book = Book::findOrFail($id);
+        
+        $activeLoans = $book->loans()->where('status', 'active')->exists();
+        if ($activeLoans) {
+            return response()->json([
+                'message' => 'Não é possível excluir um livro com histórico de empréstimos.'
+            ], 422);
+        }
+
         $book->delete();
         return response()->json(null, 204);
     }
@@ -326,6 +353,6 @@ class BookController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Livro não encontrado em nenhum de nossos provedores.'], 404);
+        return response()->json(['message' => 'Livro não encontrado. Por favor, preencha manualmente.'], 404);
     }
 }

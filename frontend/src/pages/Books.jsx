@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Trash2, Edit2, ScanLine, BookDown } from 'lucide-react';
+import { Search, Plus, Trash2, Edit2, ScanLine, BookDown, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Pagination from '../components/Pagination';
 
 export default function Books() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
 
     const handleBorrow = (book) => {
         navigate('/loans', { state: { selectBook: book } });
@@ -19,6 +20,9 @@ export default function Books() {
     const [showScannerModal, setShowScannerModal] = useState(false);
     const [scannerInput, setScannerInput] = useState('');
     const [isScanning, setIsScanning] = useState(false);
+
+    const [coverImageFile, setCoverImageFile] = useState(null);
+    const [coverImagePreview, setCoverImagePreview] = useState('');
 
     // Estados de paginação e busca
     const [currentPage, setCurrentPage] = useState(1);
@@ -72,7 +76,7 @@ export default function Books() {
             });
             toast.success('Livro encontrado!');
         } catch (e) {
-            toast.error('Livro não encontrado no Google Books. Preencha manualmente.');
+            toast.error('Livro não encontrado. Por favor, preencha manualmente.');
         } finally {
             setIsSearching(false);
         }
@@ -92,6 +96,8 @@ export default function Books() {
             cover_url: book.cover_url || '',
             created_at: book.created_at
         });
+        setCoverImageFile(null);
+        setCoverImagePreview('');
         setIsbnSearch('');
         setShowModal(true);
     };
@@ -101,20 +107,39 @@ export default function Books() {
         if (e) e.preventDefault();
         setIsSaving(true);
         try {
+            const formData = new FormData();
+            Object.keys(bookForm).forEach(key => {
+                if (bookForm[key] !== null && bookForm[key] !== undefined) {
+                    formData.append(key, bookForm[key]);
+                }
+            });
+            if (coverImageFile) {
+                formData.append('cover_image', coverImageFile);
+            }
+
             if (editId) {
-                await api.put(`/books/${editId}`, bookForm);
+                formData.append('_method', 'PUT');
+                await api.post(`/books/${editId}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 toast.success('Livro atualizado com sucesso!');
                 setShowModal(false);
                 setEditId(null);
                 setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
+                setCoverImageFile(null);
+                setCoverImagePreview('');
                 fetchBooks(currentPage, searchQuery);
             } else {
-                const payload = { ...bookForm, force_add_quantity: forceAddQuantity };
-                await api.post('/books', payload);
+                formData.append('force_add_quantity', forceAddQuantity ? 1 : 0);
+                await api.post('/books', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
                 toast.success(forceAddQuantity ? 'Quantidade adicionada ao livro existente!' : 'Livro cadastrado com sucesso!');
                 setShowModal(false);
                 setEditId(null);
                 setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
+                setCoverImageFile(null);
+                setCoverImagePreview('');
                 fetchBooks(currentPage, searchQuery);
             }
         } catch (e) {
@@ -168,6 +193,8 @@ export default function Books() {
     const openCreateModal = () => {
         setEditId(null);
         setBookForm({ isbn: '', title: '', author: '', genre: '', cdd_cdu: '', total_quantity: 1, cover_url: '', created_at: '' });
+        setCoverImageFile(null);
+        setCoverImagePreview('');
         setIsbnSearch('');
         setShowModal(true);
     };
@@ -251,7 +278,7 @@ export default function Books() {
                                                 {book.cover_url ? (
                                                     <img src={book.cover_url} alt="Capa" style={{ width: '40px', height: '56px', objectFit: 'cover', borderRadius: '4px', backgroundColor: 'var(--color-border)' }} />
                                                 ) : (
-                                                    <div style={{ width: '40px', height: '56px', backgroundColor: '#D1D5DB', borderRadius: '4px' }}></div>
+                                                    <div style={{ width: '40px', height: '56px', backgroundColor: '#D1D5DB', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', color: 'var(--color-text-muted)', textAlign: 'center', padding: '2px' }}>Capa indisponível.</div>
                                                 )}
                                             </td>
                                             <td>{book.isbn}</td>
@@ -283,6 +310,13 @@ export default function Books() {
                                             </td>
                                         </tr>
                                     ))}
+                                    {books.length === 0 && (
+                                        <tr>
+                                            <td colSpan="8" style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                                Nenhum livro encontrado correspondente à sua busca.
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -313,7 +347,7 @@ export default function Books() {
                                         {book.cover_url ? (
                                             <img src={book.cover_url} alt="Capa" style={{ width: '100%', height: '220px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }} />
                                         ) : (
-                                            <div style={{ width: '100%', height: '220px', backgroundColor: 'var(--color-border)', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>Sem Capa</div>
+                                            <div style={{ width: '100%', height: '220px', backgroundColor: 'var(--color-border)', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>Capa indisponível.</div>
                                         )}
                                         <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>{book.title}</h4>
                                         <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem' }}>{book.author}</p>
@@ -335,6 +369,11 @@ export default function Books() {
                                         )}
                                     </div>
                                 ))}
+                                {books.length === 0 && (
+                                    <div style={{ gridColumn: '1 / -1', padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                        Nenhum livro encontrado correspondente à sua busca.
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -354,7 +393,7 @@ export default function Books() {
                                 <h3 style={{ margin: 0 }}>{editId ? 'Editar Livro' : 'Cadastrar Livro'}</h3>
                                 {editId && bookForm.created_at && (
                                     <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-                                        Registrado no acervo em: {new Date(bookForm.created_at).toLocaleDateString()}
+                                        Registrado no acervo em: {new Date(bookForm.created_at).toLocaleDateString('pt-BR')}
                                     </p>
                                 )}
                             </div>
@@ -375,16 +414,61 @@ export default function Books() {
                         <form onSubmit={handleSaveBook} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '2rem' }}>
                             {/* Left Col: Cover */}
                             <div>
-                                <div style={{ width: '100%', height: '300px', backgroundColor: 'var(--color-background)', border: '2px dashed var(--color-border)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1rem', overflow: 'hidden' }}>
-                                    {bookForm.cover_url ? (
-                                        <img src={bookForm.cover_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <div
+                                    onClick={() => fileInputRef.current.click()}
+                                    style={{
+                                        width: '100%',
+                                        height: '240px',
+                                        backgroundColor: 'var(--color-background)',
+                                        border: '2px dashed var(--color-border)',
+                                        borderRadius: 'var(--radius-md)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        cursor: 'pointer',
+                                        overflow: 'hidden',
+                                        transition: 'all 0.2s ease',
+                                        position: 'relative'
+                                    }}
+                                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
+                                    onMouseOut={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
+                                >
+                                    {coverImagePreview || bookForm.cover_url ? (
+                                        <img src={coverImagePreview || bookForm.cover_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     ) : (
-                                        <div style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>Capa do Livro<br /><small>(Insira a URL ao lado)</small></div>
+                                        <div style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1rem' }}>
+                                            <Upload size={32} style={{ marginBottom: '0.5rem', color: 'var(--color-text-muted)' }} />
+                                            <div style={{ fontWeight: 500 }}>Carregar Capa</div>
+                                            <small style={{ fontSize: '0.75rem', opacity: 0.7 }}>Clique para selecionar (Máx 5MB)</small>
+                                        </div>
                                     )}
                                 </div>
-                                <div className="form-group">
-                                    <label>URL da Capa da Internet</label>
-                                    <input value={bookForm.cover_url} onChange={e => setBookForm({ ...bookForm, cover_url: e.target.value })} placeholder="https://exemplo.com/capa.jpg" />
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={e => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            setCoverImageFile(file);
+                                            setCoverImagePreview(URL.createObjectURL(file));
+                                            setBookForm({ ...bookForm, cover_url: '' });
+                                        }
+                                    }}
+                                />
+                                <div className="form-group" style={{ marginTop: '1rem' }}>
+                                    <label>Link da Imagem (Internet)</label>
+                                    <input
+                                        value={bookForm.cover_url}
+                                        onChange={e => {
+                                            setBookForm({ ...bookForm, cover_url: e.target.value });
+                                            setCoverImageFile(null);
+                                            setCoverImagePreview('');
+                                        }}
+                                        placeholder="https://exemplo.com/capa.jpg"
+                                    />
                                 </div>
                             </div>
 

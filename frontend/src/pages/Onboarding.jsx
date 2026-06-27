@@ -30,7 +30,7 @@ export default function Onboarding() {
         setLoading(true);
 
         if (formData.admin_password !== formData.admin_password_confirmation) {
-            setError('As senhas não coincidem.');
+            setError('As senhas não coincidem. Por favor, digite novamente.');
             setLoading(false);
             return;
         }

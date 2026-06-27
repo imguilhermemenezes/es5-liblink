@@ -15,10 +15,22 @@ class SchoolController extends Controller
     {
         $request->validate([
             'school_name' => 'required|string|max:255',
-            'inep_code' => 'required|string|max:255|unique:schools,inep_code',
+            'inep_code' => 'required|string|size:8|regex:/^[0-9]{8}$/|unique:schools,inep_code',
             'admin_name' => 'required|string|max:255',
             'admin_email' => 'required|string|email|max:255|unique:users,email',
             'admin_password' => 'required|string|min:8|confirmed',
+        ], [
+            'school_name.required' => 'Campos obrigatórios não preenchidos.',
+            'inep_code.required' => 'Campos obrigatórios não preenchidos.',
+            'inep_code.size' => 'Código INEP não localizado. Verifique os dados.',
+            'inep_code.regex' => 'Código INEP não localizado. Verifique os dados.',
+            'inep_code.unique' => 'Este Código INEP já possui uma instituição vinculada.',
+            'admin_name.required' => 'Campos obrigatórios não preenchidos.',
+            'admin_email.required' => 'Campos obrigatórios não preenchidos.',
+            'admin_email.email' => 'Campos obrigatórios não preenchidos.',
+            'admin_email.unique' => 'Este e-mail já está em uso por outro usuário.',
+            'admin_password.required' => 'Campos obrigatórios não preenchidos.',
+            'admin_password.confirmed' => 'As senhas não coincidem. Por favor, digite novamente.',
         ]);
 
         try {
@@ -79,15 +91,33 @@ class SchoolController extends Controller
             'max_books_per_student' => 'sometimes|integer|min:1',
             'block_multiple_loans' => 'sometimes|boolean',
             'logo_url' => 'nullable|string|max:1000',
+            'logo_image' => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'primary_color' => 'sometimes|string|max:7',
             'penalty_fine_per_day' => 'sometimes|numeric|min:0',
             'penalty_block_loans' => 'sometimes|boolean',
+        ], [
+            'max_loan_days.integer' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'max_loan_days.min' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'max_books_per_student.integer' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'max_books_per_student.min' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'penalty_fine_per_day.numeric' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'penalty_fine_per_day.min' => 'As regras de uso precisam conter valores numéricos válidos.',
+            'logo_image.image' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'logo_image.mimes' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
+            'logo_image.max' => 'O arquivo selecionado é inválido. Envie uma imagem de até 5MB.',
         ]);
 
-        $school->update($request->only([
+        $data = $request->only([
             'name', 'max_loan_days', 'max_books_per_student', 'block_multiple_loans', 'logo_url', 
             'primary_color', 'penalty_fine_per_day', 'penalty_block_loans'
-        ]));
+        ]);
+
+        if ($request->hasFile('logo_image')) {
+            $path = $request->file('logo_image')->store('logos', 'public');
+            $data['logo_url'] = asset('storage/' . $path);
+        }
+
+        $school->update($data);
 
         return response()->json([
             'message' => 'Configurações atualizadas com sucesso.',
